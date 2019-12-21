@@ -1,0 +1,56 @@
+# Docker
+# Build a Docker image 
+# https://docs.microsoft.com/azure/devops/pipelines/languages/docker
+
+trigger:
+- master
+
+resources:
+- repo: self
+
+variables:
+  tag: '$(Build.BuildId)'
+  imageName: 'pomotr:$(build.buildNumber)'
+
+stages:
+- stage: Build
+  displayName: Build image
+  jobs:  
+  - job: Build
+    displayName: Build
+    pool:
+      vmImage: 'ubuntu-latest'    
+    steps:
+    - task: Docker@2
+      displayName: Build an image
+      inputs:
+        command: build
+        dockerfile: '$(Build.SourcesDirectory)/Dockerfile'
+        tags: |
+          $(tag)
+    - script: |
+        export id=$(docker images --filter "label=test=true" -q | head -1)
+        echo $id
+        mkdir ./testresults
+        mkdir ./testresults/coverage
+        docker create --name testcontainer $id    
+        docker cp testcontainer:/build/test-results/test-results.xml ./testresults
+        docker cp testcontainer:/build/test-results/coverage.xml ./testresults/coverage
+        docker rm testcontainer
+        ls testresults
+        ls testresults/coverage
+      displayName: 'Extract test results'
+    - task: PublishTestResults@2
+      inputs:
+        testResultsFormat: 'VSTest'
+        testResultsFiles: '**/test*.xml'
+        searchFolder: '$(System.DefaultWorkingDirectory)/testresults'
+        publishRunAttachments: true
+      displayName: 'Publish test results'
+    - task: PublishCodeCoverageResults@1
+      inputs:
+        codeCoverageTool: 'cobertura'
+        summaryFileLocation: '$(System.DefaultWorkingDirectory)/testresults/coverage/coverage.xml'
+        reportDirectory: '$(System.DefaultWorkingDirectory)/testresults/coverage/reports'
+      displayName: 'Publish coverage reports'
+
