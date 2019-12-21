@@ -17,5 +17,8 @@ namespace PomotrApp.Data
             IOptions<OperationalStoreOptions> operationalStoreOptions) : base(options, operationalStoreOptions)
         {
         }
+
+        public DbSet<Errand> Errands { get; set; }
+        public DbSet<Family> Families { get; set; }
     }
 }
