@@ -4,14 +4,48 @@ import ReactDOM from 'react-dom';
 import { BrowserRouter } from 'react-router-dom';
 import App from './App';
 //import registerServiceWorker from './registerServiceWorker';
+import { createMuiTheme, ThemeProvider } from '@material-ui/core/styles';
 
 const baseUrl = document.getElementsByTagName('base')[0].getAttribute('href');
 const rootElement = document.getElementById('root');
 
+const theme = createMuiTheme({
+  palette: {
+    primary: {
+      main: '#E0F3B2'
+    },
+    secondary: {
+      main: '#59C3C0'
+    },
+    canvas: {
+      main: '#E8C916'
+    }
+    //D0D2A5
+    //E8C916
+    //A77A64
+  },
+  typography: {
+    fontFamily: [
+      '-apple-system',
+      'BlinkMacSystemFont',
+      '"Segoe UI"',
+      'Roboto',
+      '"Helvetica Neue"',
+      'Arial',
+      'sans-serif',
+      '"Apple Color Emoji"',
+      '"Segoe UI Emoji"',
+      '"Segoe UI Symbol"',
+    ].join(','),
+  },
+});
+
 ReactDOM.render(
-  <BrowserRouter basename={baseUrl}>
-    <App />
-  </BrowserRouter>,
+  <ThemeProvider theme={theme}>
+    <BrowserRouter basename={baseUrl}>
+      <App />
+    </BrowserRouter>
+  </ThemeProvider>,
   rootElement);
 
 // Uncomment the line above that imports the registerServiceWorker function
