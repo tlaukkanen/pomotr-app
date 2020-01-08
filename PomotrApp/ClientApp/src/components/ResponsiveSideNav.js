@@ -18,6 +18,8 @@ const useStyles = makeStyles(theme => ({
     [theme.breakpoints.up('sm')]: {
       width: drawerWidth,
       flexShrink: 0,
+
+      marginTop: theme.mixins.toolbar.height,
     },
   },
   appBar: {
@@ -120,12 +122,17 @@ export default function ResponsiveSideNav(props) {
     return (
       <div className={classes.root}>
         <CssBaseline/>
-        <Hidden smUp implementation="css">
-          <IconButton 
-              onClick={toggleSidebar}>
-            <Menu />
-          </IconButton>
-        </Hidden>
+          <AppBar>
+            <Toolbar>
+              <Hidden smUp implementation="css">
+                <IconButton 
+                    onClick={toggleSidebar}>
+                  <Menu />
+                </IconButton>
+              </Hidden>
+            </Toolbar>
+          </AppBar>
+          
         <nav className={classes.drawer}>
         <Hidden smUp implementation="css">
           <Drawer
@@ -166,6 +173,7 @@ export default function ResponsiveSideNav(props) {
         </Hidden>
         </nav>
         <Container>
+          <div className={classes.toolbar} />
           {props.children}
         </Container>        
       </div>
