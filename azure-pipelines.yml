@@ -23,6 +23,14 @@ stages:
     pool:
       vmImage: 'ubuntu-latest'    
     steps:
+    - task: DotNetCoreCLI@2
+      displayName: 'Restore'
+      inputs:
+        command: 'restore'
+    - task: DotNetCoreCLI@2
+      displayName: 'Build'
+      inputs:
+        command: 'build'  
     - task: WhiteSource Bolt@19
       displayName: 'Run WhiteSource Bolt'      
     - task: Docker@2
