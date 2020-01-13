@@ -41,7 +41,7 @@ stages:
         publishWebProjects: false
         arguments: '--no-build --configuration Release --output $(Build.ArtifactStagingDirectory)/Release'
         zipAfterPublish: true
-    - task: script: dotnet test --results-directory ./test-results --logger "trx;LogFileName=test-results.xml" /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura /p:CoverletOutput=../test-results/coverage.xml ./PomotrApp.Tests/PomotrApp.Tests.csproj
+    - script: dotnet test --results-directory ./test-results --logger "trx;LogFileName=test-results.xml" /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura /p:CoverletOutput=../test-results/coverage.xml ./PomotrApp.Tests/PomotrApp.Tests.csproj
       displayName: 'Run unit tests'
     - task: PublishBuildArtifacts@1
       displayName: 'Publish Artifact: drop'
