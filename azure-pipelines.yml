@@ -41,39 +41,22 @@ stages:
         publishWebProjects: false
         arguments: '--no-build --configuration Release --output $(Build.ArtifactStagingDirectory)/Release'
         zipAfterPublish: true
+    - task: script: dotnet test --results-directory ./test-results --logger "trx;LogFileName=test-results.xml" /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura /p:CoverletOutput=../test-results/coverage.xml ./PomotrApp.Tests/PomotrApp.Tests.csproj
+      displayName: 'Run unit tests'
     - task: PublishBuildArtifacts@1
       displayName: 'Publish Artifact: drop'
-      condition: succeeded()        
-    - task: Docker@2
-      displayName: Build an image
-      inputs:
-        command: build
-        dockerfile: '$(Build.SourcesDirectory)/Dockerfile'
-        tags: |
-          $(tag)
-    - script: |
-        export id=$(docker images --filter "label=test=true" -q | head -1)
-        echo $id
-        mkdir ./testresults
-        mkdir ./testresults/coverage
-        docker create --name testcontainer $id    
-        docker cp testcontainer:/build/test-results/test-results.xml ./testresults
-        docker cp testcontainer:/build/test-results/coverage.xml ./testresults/coverage
-        docker rm testcontainer
-        ls testresults
-        ls testresults/coverage
-      displayName: 'Extract test results'
+      condition: succeeded()
     - task: PublishTestResults@2
       inputs:
         testResultsFormat: 'VSTest'
         testResultsFiles: '**/test*.xml'
-        searchFolder: '$(System.DefaultWorkingDirectory)/testresults'
+        searchFolder: '$(System.DefaultWorkingDirectory)/test-results'
         publishRunAttachments: true
       displayName: 'Publish test results'
     - task: PublishCodeCoverageResults@1
       inputs:
         codeCoverageTool: 'cobertura'
-        summaryFileLocation: '$(System.DefaultWorkingDirectory)/testresults/coverage/coverage.xml'
-        reportDirectory: '$(System.DefaultWorkingDirectory)/testresults/coverage/reports'
+        summaryFileLocation: '$(System.DefaultWorkingDirectory)/test-results/coverage/coverage.xml'
+        reportDirectory: '$(System.DefaultWorkingDirectory)/test-results/coverage/reports'
       displayName: 'Publish coverage reports'
 
