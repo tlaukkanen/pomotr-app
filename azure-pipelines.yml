@@ -46,6 +46,8 @@ stages:
     - task: PublishBuildArtifacts@1
       displayName: 'Publish Artifact: drop'
       condition: succeeded()
+    - publish: '$(Build.ArtifactStagingDirectory)'
+      artifact: drop      
     - task: PublishTestResults@2
       inputs:
         testResultsFormat: 'VSTest'
@@ -57,7 +59,6 @@ stages:
       inputs:
         codeCoverageTool: 'cobertura'
         summaryFileLocation: '$(System.DefaultWorkingDirectory)/test-results/coverage/coverage.xml'
-        reportDirectory: '$(System.DefaultWorkingDirectory)/test-results/coverage/reports'
       displayName: 'Publish coverage reports'
 - stage: 'Deploy'
   displayName: 'Deploy to DEV environment'
