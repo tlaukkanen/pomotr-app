@@ -10,52 +10,52 @@ namespace PomotrApp.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class FamiliesController : ControllerBase
+    public class ErrandsController : ControllerBase
     {
         private ApplicationDbContext context;
 
-        public FamiliesController(ApplicationDbContext context)
+        public ErrandsController(ApplicationDbContext context)
         {
             this.context = context;
         }
 
-        // GET: api/Family
+        // GET: api/Errand
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Family>>> GetFamilies()
+        public async Task<ActionResult<IEnumerable<Errand>>> GetErrands()
         {
-            return await context.Families.ToListAsync();
+            return await context.Errands.ToListAsync();
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<Family>> GetFamily(Guid id)
+        public async Task<ActionResult<Errand>> GetErrand(Guid id)
         {
-            var family = await context.Families.FindAsync(id);
-            if(family==null) 
+            var Errand = await context.Errands.FindAsync(id);
+            if(Errand==null) 
             {
                 return NotFound();
             }
-            return family;
+            return Errand;
         }
 
         [HttpPost]
-        public async Task<IActionResult> PostFamily(Family family) 
+        public async Task<IActionResult> PostErrand(Errand Errand) 
         {
-            context.Families.Update(family);
+            context.Errands.Update(Errand);
             await context.SaveChangesAsync();
             return NoContent();
         }
 
         [HttpDelete("{id}")]
-        public async Task<ActionResult<Family>> DeleteFamily(Guid id)
+        public async Task<ActionResult<Errand>> DeleteErrand(Guid id)
         {
-            var family = await context.Families.FindAsync(id);
-            if(family==null) 
+            var Errand = await context.Errands.FindAsync(id);
+            if(Errand==null) 
             {
                 return NotFound();
             }
-            context.Families.Remove(family);
+            context.Errands.Remove(Errand);
             await context.SaveChangesAsync();
-            return family;
+            return Errand;
         }        
         
     }

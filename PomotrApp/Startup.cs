@@ -42,6 +42,27 @@ namespace PomotrApp
             services.AddControllersWithViews();
             services.AddRazorPages();
 
+            // Register Swagger
+            services.AddSwaggerDocument(configure=>{
+                configure.PostProcess = document => {
+                    document.Info.Version = "v1";
+                    document.Info.Title = "Pomotr API";
+                    document.Info.Description = "API for Pocket Money Tracker app, Pomotr";
+                    document.Info.TermsOfService = "";
+                    document.Info.Contact = new NSwag.OpenApiContact
+                    {
+                        Name = "Tommi Laukkanen",
+                        Email = string.Empty,
+                        Url = "https://twitter.com/tlaukkanen"
+                    };
+                    document.Info.License = new NSwag.OpenApiLicense
+                    {
+                        Name = "Use under MIT",
+                        Url = "https://github.com/tlaukkanen/pomotr-app/blob/master/LICENSE.md"
+                    };
+                };
+            });
+
             // In production, the React files will be served from this directory
             services.AddSpaStaticFiles(configuration =>
             {
@@ -69,6 +90,9 @@ namespace PomotrApp
             app.UseSpaStaticFiles();
 
             app.UseRouting();
+
+            app.UseOpenApi();
+            app.UseSwaggerUi3();
 
             app.UseAuthentication();
             app.UseIdentityServer();
