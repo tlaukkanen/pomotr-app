@@ -19,13 +19,14 @@ namespace PomotrApp.Controllers
             this.context = context;
         }
 
-        // GET: api/Errand
+        // GET: api/errands
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Errand>>> GetErrands()
         {
             return await context.Errands.ToListAsync();
         }
 
+        // GET: api/errands/{id}
         [HttpGet("{id}")]
         public async Task<ActionResult<Errand>> GetErrand(Guid id)
         {

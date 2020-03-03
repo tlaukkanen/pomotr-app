@@ -1,10 +1,9 @@
 import React, { Component, useState } from 'react';
-import { Collapse, Container, Navbar, NavbarBrand, NavbarToggler, NavItem, NavLink } from 'reactstrap';
 import { Link } from 'react-router-dom';
 import { LoginMenu } from './api-authorization/LoginMenu';
 import { AppBar, Toolbar, Drawer, List, ListItem, ListItemIcon, 
   ListItemText, Divider, IconButton, 
-  Grid, Hidden, CssBaseline, Typography } from '@material-ui/core';
+  Grid, Hidden, CssBaseline, Typography, Box } from '@material-ui/core';
 import { Menu, AssignmentTurnedIn, ExitToApp, Close, AssignmentInd, Assignment, SupervisorAccount, AccountCircle, Home } from '@material-ui/icons'
 import { makeStyles, useTheme, withStyles } from '@material-ui/core/styles';
 
@@ -18,13 +17,17 @@ const useStyles = makeStyles(theme => ({
     [theme.breakpoints.up('sm')]: {
       width: drawerWidth,
       flexShrink: 0,
-
       marginTop: theme.mixins.toolbar.height,
     },
   },
   appBar: {
     [theme.breakpoints.up('sm')]: {
       width: `calc(100% - ${drawerWidth}px)`,
+      marginLeft: drawerWidth,
+    },
+  },
+  appBarSpacer: {
+    [theme.breakpoints.up('sm')]: {
       marginLeft: drawerWidth,
     },
   },
@@ -39,8 +42,9 @@ const useStyles = makeStyles(theme => ({
     width: drawerWidth,
   },
   content: {
-    flexGrow: 1,
+    //flexGrow: 1,
     padding: theme.spacing(3),
+    marginTop: '60px',
   },
 }));
 
@@ -130,53 +134,54 @@ export default function ResponsiveSideNav(props) {
                   <Menu />
                 </IconButton>
               </Hidden>
+              <Box className={classes.appBarSpacer}/>
+              <Typography variant="h4">Pomotr</Typography>
             </Toolbar>
           </AppBar>
           
         <nav className={classes.drawer}>
-        <Hidden smUp implementation="css">
-          <Drawer
-          variant="temporary"
-          anchor="left"
-          open={showDrawer}
-          onClose={toggleSidebar}
-          className={classes.drawer}
-          classes={{
-            paper: classes.drawerPaper,
-          }}
-          ModalProps={{
-            keepMounted: true,
-          }}
-          >
-            <List>
-              <ListItem button onClick={toggleSidebar}>
-                <ListItemIcon><Close/></ListItemIcon>
-              </ListItem>
-              {menuListItems()}
-            </List>
-          </Drawer>
-        </Hidden>
-        <Hidden xsDown implementation="css">
-        <Drawer
-          className={classes.drawer}
-          variant="permanent"
-          open
-          onClose={toggleSidebar}
-          classes={{
-            paper: classes.drawerPaper,
-          }}
-          >
-            <List>
-              {menuListItems()}
-            </List>
-          </Drawer>
-        </Hidden>
+          <Hidden smUp implementation="css">
+            <Drawer
+            variant="temporary"
+            anchor="left"
+            open={showDrawer}
+            onClose={toggleSidebar}
+            className={classes.drawer}
+            classes={{
+              paper: classes.drawerPaper,
+            }}
+            ModalProps={{
+              keepMounted: true,
+            }}
+            >
+              <List>
+                <ListItem button onClick={toggleSidebar}>
+                  <ListItemIcon><Close/></ListItemIcon>
+                </ListItem>
+                {menuListItems()}
+              </List>
+            </Drawer>
+          </Hidden>
+          <Hidden xsDown implementation="css">
+            <Drawer
+              className={classes.drawer}
+              variant="permanent"
+              open
+              onClose={toggleSidebar}
+              classes={{
+                paper: classes.drawerPaper,
+              }}
+              >
+              <List>
+                {menuListItems()}
+              </List>
+            </Drawer>
+          </Hidden>
         </nav>
-        <Container>
-          <div className={classes.toolbar} />
+        <div className={classes.content}>
           {props.children}
-        </Container>        
-      </div>
+        </div>
+      </div>        
     );
 //  }
 }

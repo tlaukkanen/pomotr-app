@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using PomotrApp.Data;
 
-namespace PomotrApp.Data.Migrations
+namespace PomotrApp.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
     partial class ApplicationDbContextModelSnapshot : ModelSnapshot
@@ -249,6 +249,9 @@ namespace PomotrApp.Data.Migrations
                     b.Property<bool>("EmailConfirmed")
                         .HasColumnType("INTEGER");
 
+                    b.Property<Guid?>("FamilyId")
+                        .HasColumnType("TEXT");
+
                     b.Property<bool>("LockoutEnabled")
                         .HasColumnType("INTEGER");
 
@@ -283,6 +286,8 @@ namespace PomotrApp.Data.Migrations
                         .HasMaxLength(256);
 
                     b.HasKey("Id");
+
+                    b.HasIndex("FamilyId");
 
                     b.HasIndex("NormalizedEmail")
                         .HasName("EmailIndex");
@@ -395,6 +400,13 @@ namespace PomotrApp.Data.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("PomotrApp.Models.ApplicationUser", b =>
+                {
+                    b.HasOne("PomotrApp.Models.Family", "Family")
+                        .WithMany()
+                        .HasForeignKey("FamilyId");
                 });
 
             modelBuilder.Entity("PomotrApp.Models.FamilyMember", b =>

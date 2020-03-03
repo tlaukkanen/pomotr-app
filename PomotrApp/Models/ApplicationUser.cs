@@ -8,5 +8,6 @@ namespace PomotrApp.Models
 {
     public class ApplicationUser : IdentityUser
     {
+        public Family Family { get; set; }
     }
 }
