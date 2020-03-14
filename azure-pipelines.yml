@@ -5,7 +5,7 @@
 trigger:
   branches:
     include:
-    - '*'
+    - master
 
 resources:
 - repo: self
@@ -29,10 +29,13 @@ stages:
       inputs:
         version: '3.1.x'
         packageType: sdk
+    # Build
     - script: dotnet build --configuration $(buildConfiguration)
       displayName: 'dotnet build $(buildConfiguration)'
+    # Vulnerability scan 
     - task: WhiteSource Bolt@19
       displayName: 'Run WhiteSource Bolt'
+    # Publish (zip)
     - task: DotNetCoreCLI@2
       displayName: 'Publish the project - Release'
       inputs:
@@ -41,13 +44,10 @@ stages:
         publishWebProjects: false
         arguments: '--no-build --configuration Release --output $(Build.ArtifactStagingDirectory)/Release'
         zipAfterPublish: true
+    # Unit tests
     - script: dotnet test --results-directory ./test-results --logger "trx;LogFileName=test-results.xml" /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura /p:CoverletOutput=../test-results/coverage.xml ./PomotrApp.Tests/PomotrApp.Tests.csproj
       displayName: 'Run unit tests'
-    - task: PublishBuildArtifacts@1
-      displayName: 'Publish Artifact: drop'
-      condition: succeeded()
-    - publish: '$(Build.ArtifactStagingDirectory)'
-      artifact: drop      
+    # Publish test results
     - task: PublishTestResults@2
       inputs:
         testResultsFormat: 'VSTest'
@@ -55,11 +55,19 @@ stages:
         searchFolder: '$(System.DefaultWorkingDirectory)/test-results'
         publishRunAttachments: true
       displayName: 'Publish test results'
+    # Publish test coverage
     - task: PublishCodeCoverageResults@1
       inputs:
         codeCoverageTool: 'cobertura'
         summaryFileLocation: '$(System.DefaultWorkingDirectory)/test-results/coverage/coverage.xml'
       displayName: 'Publish coverage reports'
+    # Publish build artifact (zip)
+    - task: PublishBuildArtifacts@1
+      displayName: 'Publish Artifact: drop'
+      condition: succeeded()
+    # Publish package (zip)
+    - publish: '$(Build.ArtifactStagingDirectory)'
+      artifact: drop
 - stage: 'Deploy'
   displayName: 'Deploy to DEV environment'
   dependsOn: Build
@@ -77,6 +85,6 @@ stages:
             - task: AzureWebApp@1
               displayName: 'Azure App Service Deploy: website'
               inputs:
-                azureSubscription: 'Resource Manager - Pomotr'
-                appName: 'PomotrApp'
+                azureSubscription: 'sc-pomotr-dev'
+                appName: 'pomotr-dev'
                 package: '**/PomotrApp.zip'        
