@@ -61,13 +61,10 @@ stages:
         codeCoverageTool: 'cobertura'
         summaryFileLocation: '$(System.DefaultWorkingDirectory)/test-results/coverage/coverage.xml'
       displayName: 'Publish coverage reports'
-    # Publish build artifact (zip)
-    - task: PublishBuildArtifacts@1
-      displayName: 'Publish Artifact: drop'
-      condition: succeeded()
     # Publish package (zip)
     - publish: '$(Build.ArtifactStagingDirectory)'
       artifact: drop
+      condition: succeeded()
 - stage: 'Deploy'
   displayName: 'Deploy to DEV environment'
   dependsOn: Build
