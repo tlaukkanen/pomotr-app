@@ -84,4 +84,4 @@ stages:
               inputs:
                 azureSubscription: 'sc-pomotr-dev'
                 appName: 'pomotr-dev'
-                package: '$(System.DefaultWorkingDirectory)/**/PomotrApp.zip'        
+                package: '$(Pipeline.Workspace)/**/PomotrApp.zip'        
