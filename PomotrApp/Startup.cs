@@ -33,8 +33,12 @@ namespace PomotrApp
             services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = true)
                 .AddEntityFrameworkStores<ApplicationDbContext>();
 
-            services.AddIdentityServer()
+            var identityServerBuild = services.AddIdentityServer();
+            identityServerBuild
                 .AddApiAuthorization<ApplicationUser, ApplicationDbContext>();
+            if(string.IsNullOrEmpty( Configuration["AzureKeyVault:Url"]) ) {
+                
+            }
 
             services.AddAuthentication()
                 .AddIdentityServerJwt();
