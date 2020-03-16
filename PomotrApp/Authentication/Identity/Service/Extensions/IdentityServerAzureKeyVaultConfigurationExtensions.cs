@@ -1,8 +1,10 @@
+using IdentityServer4.Models;
 using IdentityServer4.Stores;
 using Microsoft.Azure.KeyVault;
 using Microsoft.Azure.Services.AppAuthentication;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Clients.ActiveDirectory;
 using Microsoft.IdentityModel.Tokens;
 using System;
@@ -14,202 +16,208 @@ using System.Threading.Tasks;
 namespace Authentication.Identity.Service.Extensions
 {
 
-  /// <summary>
-  /// Extension methods for using Azure Key Vault with <see cref="IIdentityServerBuilder"/>.
-  /// </summary>
-  public static class IdentityServerAzureKeyVaultConfigurationExtensions
-  {
     /// <summary>
-    /// Adds a SigningCredentialStore and a ValidationKeysStore that reads the signing certificate from the Azure KeyVault.
+    /// Extension methods for using Azure Key Vault with <see cref="IIdentityServerBuilder"/>.
     /// </summary>
-    /// <param name="identityServerbuilder">The <see cref="IIdentityServerBuilder"/> to add to.</param>
-    /// <param name="vault">The Azure KeyVault uri.</param>
-    /// <param name="clientId">The application client id.</param>
-    /// <param name="clientSecret">The client secret to use for authentication.</param>
-    /// <param name="certificateName">The name of the certificate to use as the signing certificate.</param>
-    /// <returns>The <see cref="IIdentityServerBuilder"/>.</returns>
-    public static IIdentityServerBuilder AddSigningCredentialFromAzureKeyVault(this IIdentityServerBuilder identityServerbuilder, string vault, string clientId, string clientSecret, string certificateName, int signingKeyRolloverTimeInHours)
+    public static class IdentityServerAzureKeyVaultConfigurationExtensions
     {
-      KeyVaultClient.AuthenticationCallback authenticationCallback = (authority, resource, scope) => GetTokenFromClientSecret(authority, resource, clientId, clientSecret);
-      var keyVaultClient = new KeyVaultClient(authenticationCallback);
+        /// <summary>
+        /// Adds a SigningCredentialStore and a ValidationKeysStore that reads the signing certificate from the Azure KeyVault.
+        /// </summary>
+        /// <param name="identityServerbuilder">The <see cref="IIdentityServerBuilder"/> to add to.</param>
+        /// <param name="vault">The Azure KeyVault uri.</param>
+        /// <param name="certificateName">The name of the certificate to use as the signing certificate.</param>
+        /// <param name="clientId">The application client id.</param>
+        /// <param name="clientSecret">The client secret to use for authentication.</param>
+        /// <returns>The <see cref="IIdentityServerBuilder"/>.</returns>
+        public static IIdentityServerBuilder AddSigningCredentialFromAzureKeyVault(this IIdentityServerBuilder identityServerbuilder, string vault, string certificateName, string clientId, string clientSecret, Action<AzureKeyVaultSigningCredentialOptions> configureOptions = null)
+        {
+            KeyVaultClient.AuthenticationCallback authenticationCallback = (authority, resource, scope) => GetTokenFromClientSecret(authority, resource, clientId, clientSecret);
+            return AddSigningCredentialFromAzureKeyVaultInternal(identityServerbuilder, authenticationCallback, vault, certificateName, configureOptions);
+        }
 
-      identityServerbuilder.Services.AddMemoryCache();
+        /// <summary>
+        /// Adds a SigningCredentialStore and a ValidationKeysStore that reads the signing certificate from the Azure KeyVault.
+        /// </summary>
+        /// <param name="identityServerbuilder">The <see cref="IIdentityServerBuilder"/> to add to.</param>
+        /// <param name="vault">The Azure KeyVault uri.</param>
+        /// <param name="certificateName">The name of the certificate to use as the signing certificate.</param>
+        /// <remarks>Use this if you are using MSI (Managed Service Identity)</remarks>
+        /// <returns>The <see cref="IIdentityServerBuilder"/>.</returns>
+        public static IIdentityServerBuilder AddSigningCredentialFromAzureKeyVault(this IIdentityServerBuilder identityServerbuilder, string vault, string certificateName, Action<AzureKeyVaultSigningCredentialOptions> configureOptions = null)
+        {
+            var azureServiceTokenProvider = new AzureServiceTokenProvider();
+            var authenticationCallback = new KeyVaultClient.AuthenticationCallback(azureServiceTokenProvider.KeyVaultTokenCallback);
+            return AddSigningCredentialFromAzureKeyVaultInternal(identityServerbuilder, authenticationCallback, vault, certificateName, configureOptions);
+        }
 
-      var sp = identityServerbuilder.Services.BuildServiceProvider();
-      identityServerbuilder.Services.AddSingleton<ISigningCredentialStore>(new AzureKeyVaultSigningCredentialStore(sp.GetService<IMemoryCache>(), keyVaultClient, vault, certificateName, signingKeyRolloverTimeInHours));
-      identityServerbuilder.Services.AddSingleton<IValidationKeysStore>(new AzureKeyVaultValidationKeysStore(sp.GetService<IMemoryCache>(), keyVaultClient, vault, certificateName));
+        private static IIdentityServerBuilder AddSigningCredentialFromAzureKeyVaultInternal(this IIdentityServerBuilder identityServerbuilder, KeyVaultClient.AuthenticationCallback authenticationCallback, string vault, string certificateName, Action<AzureKeyVaultSigningCredentialOptions> configureOptions)
+        {
+            identityServerbuilder.Services
+                .AddMemoryCache()
+                .Configure<AzureKeyVaultSigningCredentialOptions>(opts =>
+                {
+                    opts.KeyVaultUrl = vault;
+                    opts.CertificateName = certificateName;
+                    configureOptions?.Invoke(opts);
+                })
+                .AddSingleton<IKeyVaultClient>(new KeyVaultClient(authenticationCallback))
+                .AddTransient<ISigningCredentialStore, AzureKeyVaultKeyProvider>()
+                .AddTransient<IValidationKeysStore, AzureKeyVaultKeyProvider>();
 
-      return identityServerbuilder;
+            return identityServerbuilder;
+        }
+
+        private static async Task<string> GetTokenFromClientSecret(string authority, string resource, string clientId, string clientSecret)
+        {
+            var authContext = new AuthenticationContext(authority);
+            var clientCred = new ClientCredential(clientId, clientSecret);
+            var result = await authContext.AcquireTokenAsync(resource, clientCred);
+            return result.AccessToken;
+        }
     }
 
     /// <summary>
-    /// Adds a SigningCredentialStore and a ValidationKeysStore that reads the signing certificate from the Azure KeyVault.
+    /// Options for the AzureKeyVaultSigningCredentials
     /// </summary>
-    /// <param name="identityServerbuilder">The <see cref="IIdentityServerBuilder"/> to add to.</param>
-    /// <param name="vault">The Azure KeyVault uri.</param>
-    /// <param name="certificateName">The name of the certificate to use as the signing certificate.</param>
-    /// <remarks>Use this if you are using MSI (Managed Service Identity)</remarks>
-    /// <returns>The <see cref="IIdentityServerBuilder"/>.</returns>
-    public static IIdentityServerBuilder AddSigningCredentialFromAzureKeyVault(this IIdentityServerBuilder builder, string vault, string certificateName, int signingKeyRolloverTimeInHours)
+    public class AzureKeyVaultSigningCredentialOptions
     {
-      var azureServiceTokenProvider = new AzureServiceTokenProvider();
-      var authenticationCallback = new KeyVaultClient.AuthenticationCallback(azureServiceTokenProvider.KeyVaultTokenCallback);
-      var keyVaultClient = new KeyVaultClient(authenticationCallback);
+        /// <summary>
+        /// The Azure KeyVault uri.
+        /// </summary>
+        public string KeyVaultUrl { get; set; }
 
-      builder.Services.AddMemoryCache();
+        /// <summary>
+        /// The name of the certificate to use as the signing certificate.
+        /// </summary>
+        public string CertificateName { get; set; }
 
-      var sp = builder.Services.BuildServiceProvider();
-      builder.Services.AddSingleton<ISigningCredentialStore>(new AzureKeyVaultSigningCredentialStore(sp.GetService<IMemoryCache>(), keyVaultClient, vault, certificateName, signingKeyRolloverTimeInHours));
-      builder.Services.AddSingleton<IValidationKeysStore>(new AzureKeyVaultValidationKeysStore(sp.GetService<IMemoryCache>(), keyVaultClient, vault, certificateName));
+        /// <summary>
+        /// Delay in hours before a new version of the certificate can be used as the signing credential.
+        /// </summary>
+        public int RolloverDelayHours { get; set; } = 48;
 
-      return builder;
+        /// <summary>
+        /// Time between refreshes of the keys from the Azure Key Vault.
+        /// </summary>
+        public int RefreshIntervalHours { get; set; } = 24;
     }
 
-    private static async Task<string> GetTokenFromClientSecret(string authority, string resource, string clientId, string clientSecret)
+    /// <summary>
+    /// Implementation of the <see cref="ISigningCredentialStore"/> and <see cref="IValidationKeysStore"/>
+    /// that leverages a certificate loaded from an AzureKeyVault.
+    /// </summary>
+    internal class AzureKeyVaultKeyProvider : ISigningCredentialStore, IValidationKeysStore
     {
-      var authContext = new AuthenticationContext(authority);
-      var clientCred = new ClientCredential(clientId, clientSecret);
-      var result = await authContext.AcquireTokenAsync(resource, clientCred);
-      return result.AccessToken;
-    }
-  }
+        private const string CacheKey = "IdentityServerSigningKeys";
+        private class SigningKeys
+        {
+            public SigningCredentials SigningCredentials { get; set; }
+            public IEnumerable<SecurityKeyInfo> ValidationKeys { get; set; }
+        }
 
-  public class AzureKeyVaultSigningCredentialStore : KeyStore, ISigningCredentialStore
-  {
-    private readonly IMemoryCache _cache;
-    private readonly KeyVaultClient _keyVaultClient;
-    private readonly string _vault;
-    private readonly string _certificateName;
-    private readonly int _signingKeyRolloverTimeInHours;
+        private readonly IMemoryCache _cache;
+        private readonly IKeyVaultClient _keyVaultClient;
+        private readonly AzureKeyVaultSigningCredentialOptions _options;
 
-    public AzureKeyVaultSigningCredentialStore(IMemoryCache memoryCache, KeyVaultClient keyVaultClient, string vault, string certificateName, int signingKeyRolloverTimeInHours) : base(keyVaultClient, vault)
-    {
-      _cache = memoryCache;
-      _keyVaultClient = keyVaultClient;
-      _vault = vault;
-      _certificateName = certificateName;
-      _signingKeyRolloverTimeInHours = signingKeyRolloverTimeInHours;
-    }
+        public AzureKeyVaultKeyProvider(IMemoryCache memoryCache, IKeyVaultClient keyVaultClient, IOptions<AzureKeyVaultSigningCredentialOptions> options)
+        {
+            _cache = memoryCache;
+            _keyVaultClient = keyVaultClient;
+            _options = options.Value;
+        }
 
-    public async Task<SigningCredentials> GetSigningCredentialsAsync()
-    {
-      // Try get the signing credentials from the cache
-      if (_cache.TryGetValue("SigningCredentials", out SigningCredentials signingCredentials))
-        return signingCredentials;
+        public async Task<SigningCredentials> GetSigningCredentialsAsync()
+        {
+            var keys = await GetKeysInternal();
+            return keys.SigningCredentials;
+        }
 
-      signingCredentials = await GetFirstValidSigningCredentials();
+        public async Task<IEnumerable<SecurityKeyInfo>> GetValidationKeysAsync()
+        {
+            var keys = await GetKeysInternal();
+            return keys.ValidationKeys;
+        }
 
-      if (signingCredentials == null)
-        return null;
+        private async Task<SigningKeys> GetKeysInternal()
+        {
+            if (!_cache.TryGetValue(CacheKey, out SigningKeys keys))
+            {
+                var certificates = await GetAllCertificateVersions(_options.KeyVaultUrl, _options.CertificateName);
+                var signingCert = GetLatestCertificateWithRolloverDelay(certificates, _options.RolloverDelayHours);
+                if (signingCert == null)
+                {
+                    throw new Exception("No valid certificate available for use as signing credentials!");
+                }
 
-      // Cache it
-      var options = new MemoryCacheEntryOptions();
-      options.AbsoluteExpiration = DateTime.Now.AddDays(1);
-      _cache.Set("SigningCredentials", signingCredentials, options);
+                keys = new SigningKeys
+                {
+                    SigningCredentials = new SigningCredentials(new X509SecurityKey(signingCert), SecurityAlgorithms.RsaSha256),
+                    ValidationKeys =
+                      var keyInfo = new SecurityKeyInfo { Key = key, SigningAlgorithm = SecurityAlgorithms.RsaSha256 };
+                        certificates.Select(c => new X509SecurityKey(c)).ToList()
+                };
 
-      return signingCredentials;
-    }
+                _cache.Set(CacheKey, keys, DateTimeOffset.UtcNow.AddHours(_options.RefreshIntervalHours));
+            }
 
-    private async Task<SigningCredentials> GetFirstValidSigningCredentials()
-    {
-      // Find all enabled versions of the certificate
-      var enabledCertificateVersions = await GetAllEnabledCertificateVersionsAsync(_certificateName);
+            return keys;
+        }
 
-      if (!enabledCertificateVersions.Any())
-      {
-        return null;
-      }
+        private async Task<List<X509Certificate2>> GetAllCertificateVersions(string keyVaultUrl, string certificateName)
+        {
+            var certificates = new List<X509Certificate2>();
 
-      // Find the first certificate version that has a passed rollover time
-      var certificateVersionWithPassedRolloverTime = enabledCertificateVersions
-        .FirstOrDefault(certVersion => certVersion.Attributes.Created.HasValue && certVersion.Attributes.Created.Value < DateTime.UtcNow.AddHours(-_signingKeyRolloverTimeInHours));
+            // Get the first page of certificates
+            var certificateItemsPage = await _keyVaultClient.GetCertificateVersionsAsync(keyVaultUrl, certificateName);
+            while (true)
+            {
+                foreach (var certificateItem in certificateItemsPage)
+                {
+                    // Ignored disabled or expired certificates
+                    if (certificateItem.Attributes.Enabled == true &&
+                        (certificateItem.Attributes.Expires == null || certificateItem.Attributes.Expires > DateTime.UtcNow))
+                    {
+                        var certificateVersionBundle = await _keyVaultClient.GetCertificateAsync(certificateItem.Identifier.Identifier);
+                        var certificatePrivateKeySecretBundle = await _keyVaultClient.GetSecretAsync(certificateVersionBundle.SecretIdentifier.Identifier);
+                        var privateKeyBytes = Convert.FromBase64String(certificatePrivateKeySecretBundle.Value);
+                        var certificateWithPrivateKey = new X509Certificate2(privateKeyBytes, (string)null, X509KeyStorageFlags.MachineKeySet);
 
-      // If no certificate with passed rollovertime was found, pick the first enabled version of the certificate (This can happen if it's a newly created certificate)
-      if (certificateVersionWithPassedRolloverTime == null)
-      {
-        return await GetSigningCredentialsFromCertificateAsync(enabledCertificateVersions.First());
-      }
-      else
-      {
-        return await GetSigningCredentialsFromCertificateAsync(certificateVersionWithPassedRolloverTime);
-      }
-    }
-  }
+                        certificates.Add(certificateWithPrivateKey);
+                    }
+                }
 
-  public class AzureKeyVaultValidationKeysStore : KeyStore, IValidationKeysStore
-  {
-    private readonly IMemoryCache _cache;
-    private readonly KeyVaultClient _keyVaultClient;
-    private readonly string _vault;
-    private readonly string _certificateName;
+                if (certificateItemsPage.NextPageLink == null)
+                {
+                    break;
+                }
+                else
+                {
+                    // Get the next page
+                    certificateItemsPage = await _keyVaultClient.GetCertificateVersionsNextAsync(certificateItemsPage.NextPageLink);
+                }
+            }
 
-    public AzureKeyVaultValidationKeysStore(IMemoryCache memoryCache, KeyVaultClient keyVaultClient, string vault, string certificateName) : base(keyVaultClient, vault)
-    {
-      _cache = memoryCache;
-      _keyVaultClient = keyVaultClient;
-      _vault = vault;
-      _certificateName = certificateName;
-    }
+            return certificates;
+        }
 
-    public async Task<IEnumerable<SecurityKey>> GetValidationKeysAsync()
-    {
-      // Try get the signing credentials from the cache
-      if (_cache.TryGetValue("ValidationKeys", out List<SecurityKey> validationKeys))
-        return validationKeys;
+        private X509Certificate2 GetLatestCertificateWithRolloverDelay(List<X509Certificate2> certificates, int rolloverDelayHours)
+        {
+            // First limit the search to just those certificates that have existed longer than the rollover delay.
+            var rolloverCutoff = DateTime.Now.AddHours(-rolloverDelayHours);
+            var potentialCerts = certificates.Where(c => c.NotBefore < rolloverCutoff);
 
-      validationKeys = new List<SecurityKey>();
+            // If no certs could be found, then widen the search to any usable certificate.
+            if (!potentialCerts.Any())
+            {
+                potentialCerts = certificates.Where(c => c.NotBefore < DateTime.Now);
+            }
 
-      // Get all the certificate versions (this will also get the currect active version)
-      var enabledCertificateVersions = await GetAllEnabledCertificateVersionsAsync(_certificateName);
-      foreach (var certificateItem in enabledCertificateVersions)
-      {
-        // Add the security key to validation keys so any JWT tokens signed with a older version of the signing certificate
-        validationKeys.Add(await GetSecurityKeyFromCertificateAsync(certificateItem));
-      }
-
-      // Add the validation keys to the cache
-      var options = new MemoryCacheEntryOptions();
-      options.AbsoluteExpiration = DateTime.Now.AddDays(1);
-      _cache.Set("ValidationKeys", validationKeys, options);
-
-      return validationKeys;
-    }
-  }
-
-  public abstract class KeyStore
-  {
-    private readonly KeyVaultClient _keyVaultClient;
-    private readonly string _vault;
-
-    public KeyStore(KeyVaultClient keyVaultClient, string vault)
-    {
-      _keyVaultClient = keyVaultClient;
-      _vault = vault;
+            // Of the potential certs, return the newest one.
+            return potentialCerts
+                .OrderByDescending(c => c.NotBefore)
+                .FirstOrDefault();
+        }
     }
 
-    internal async Task<List<Microsoft.Azure.KeyVault.Models.CertificateItem>> GetAllEnabledCertificateVersionsAsync(string certificateName)
-    {
-      // Get all the certificate versions (this will also get the currect active version)
-      var certificateVersions = await _keyVaultClient.GetCertificateVersionsAsync(_vault, certificateName);
-
-      // Find all enabled versions of the certificate and sort them by creation date in decending order 
-      return certificateVersions
-        .Where(certVersion => certVersion.Attributes.Enabled.HasValue && certVersion.Attributes.Enabled.Value)
-        .OrderByDescending(certVersion => certVersion.Attributes.Created)
-        .ToList();
-    }
-    internal async Task<SigningCredentials> GetSigningCredentialsFromCertificateAsync(Microsoft.Azure.KeyVault.Models.CertificateItem certificateItem)
-    {
-      var certificateVersionSecurityKey = await GetSecurityKeyFromCertificateAsync(certificateItem);
-      return new SigningCredentials(certificateVersionSecurityKey, SecurityAlgorithms.RsaSha256);
-    }
-    internal async Task<SecurityKey> GetSecurityKeyFromCertificateAsync(Microsoft.Azure.KeyVault.Models.CertificateItem certificateItem)
-    {
-      var certificateVersionBundle = await _keyVaultClient.GetCertificateAsync(certificateItem.Identifier.Identifier);
-      var certificatePrivateKeySecretBundle = await _keyVaultClient.GetSecretAsync(certificateVersionBundle.SecretIdentifier.Identifier);
-      var privateKeyBytes = Convert.FromBase64String(certificatePrivateKeySecretBundle.Value);
-      var certificateWithPrivateKey = new X509Certificate2(privateKeyBytes, (string)null, X509KeyStorageFlags.MachineKeySet);
-      return new X509SecurityKey(certificateWithPrivateKey);
-    }
-  }
 }
