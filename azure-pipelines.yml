@@ -29,6 +29,13 @@ stages:
       inputs:
         version: '3.1.x'
         packageType: sdk
+    - task: SonarCloudPrepare@1
+      inputs:
+        SonarCloud: 'SonarCloud-PomotrApp'
+        organization: 'tlaukkanen'
+        scannerMode: 'MSBuild'
+        projectKey: 'tlaukkanen_pomotr-app'
+        projectName: 'Pomotr'
     # Build
     - script: dotnet build --configuration $(buildConfiguration)
       displayName: 'dotnet build $(buildConfiguration)'
@@ -47,6 +54,13 @@ stages:
     # Unit tests
     - script: dotnet test --results-directory ./test-results --logger "trx;LogFileName=test-results.xml" /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura /p:CoverletOutput=../test-results/coverage.xml ./PomotrApp.Tests/PomotrApp.Tests.csproj
       displayName: 'Run unit tests'
+
+    # Run SonarCloud analyze
+    - task: SonarCloudAnalyze@1
+    - task: SonarCloudPublish@1
+      inputs:
+        pollingTimeoutSec: '300'
+
     # Publish test results
     - task: PublishTestResults@2
       inputs:
