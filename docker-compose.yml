@@ -1,0 +1,7 @@
+version: "3.7"
+services:
+  db:
+    build:
+      context: ./SqlDev
+    ports:
+      - "1444:1433"

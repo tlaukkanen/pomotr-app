@@ -4,4 +4,7 @@ ENV SA_PASSWORD ReallyStringDevPassword#007
 ENV ACCEPT_EULA Y
 ENV MSSQL_PID Express
 
-CMD /bin/bash ./entrypoint.sh
+COPY ./entrypoint.sh /
+
+ENTRYPOINT [ "/bin/bash", "entrypoint.sh" ]
+CMD [ "/opt/mssql/bin/sqlservr" ]

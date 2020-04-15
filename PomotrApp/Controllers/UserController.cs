@@ -34,7 +34,6 @@ namespace PomotrApp.Controllers
         [HttpPost("login")]
         public async Task<ActionResult> Login(LoginData loginData)
         {
-            
             return Ok();
         }
 
