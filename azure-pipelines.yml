@@ -25,9 +25,9 @@ stages:
       vmImage: 'ubuntu-latest'    
     steps:
     - task: UseDotNet@2 
-      displayName: ".NET Core 3.1.x"
+      displayName: ".NET Core 2.x"
       inputs:
-        version: '3.1.x'
+        version: '2.x'
         packageType: sdk
     - task: SonarCloudPrepare@1
       inputs:
@@ -36,6 +36,11 @@ stages:
         scannerMode: 'MSBuild'
         projectKey: 'tlaukkanen_pomotr-app'
         projectName: 'Pomotr'
+    - task: UseDotNet@2 
+      displayName: ".NET Core 3.1.x"
+      inputs:
+        version: '3.1.x'
+        packageType: sdk
     # Build
     - script: dotnet build --configuration $(buildConfiguration)
       displayName: 'dotnet build $(buildConfiguration)'
@@ -56,6 +61,11 @@ stages:
       displayName: 'Run unit tests'
 
     # Run SonarCloud analyze
+    - task: UseDotNet@2 
+      displayName: ".NET Core 2.x"
+      inputs:
+        version: '2.x'
+        packageType: sdk
     - task: SonarCloudAnalyze@1
     - task: SonarCloudPublish@1
       inputs:
