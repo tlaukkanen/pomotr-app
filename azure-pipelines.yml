@@ -48,6 +48,12 @@ stages:
     - script: dotnet build --configuration $(buildConfiguration)
       displayName: 'dotnet build $(buildConfiguration)'
       
+    # Create EF Migrations
+    - script: dotnet tool install --global dotnet-ef
+      displayName: 'Install EF Core tool'
+    - script: dotnet ef migrations script --project ./PomotrApp --idempotent --output $(Build.ArtifactStagingDirectory)/sql/update_to_latest.sql
+      displayName: 'Create SQL script for EF migrations'
+      
     # Vulnerability scan 
     - task: WhiteSource Bolt@19
       displayName: 'Run WhiteSource Bolt'
@@ -105,7 +111,7 @@ stages:
   jobs:
   - deployment: Deploy
     pool:
-      vmImage: 'ubuntu-latest'
+      vmImage: 'windows-latest'
     environment: dev
     strategy:
       runOnce:
@@ -113,9 +119,21 @@ stages:
           steps:
             - download: current
               artifact: drop
+
             - task: AzureWebApp@1
               displayName: 'Azure App Service Deploy: website'
               inputs:
                 azureSubscription: 'sc-pomotr-dev'
                 appName: 'pomotr-dev'
-                package: '$(Pipeline.Workspace)/**/PomotrApp.zip'        
+                package: '$(Pipeline.Workspace)/**/PomotrApp.zip'
+
+            - task: SqlAzureDacpacDeployment@1
+                displayName: 'Apply database schema changes'
+                inputs:
+                  azureSubscription: 'sc-pomotr-dev'
+                  ServerName: '$(SqlServerNameDev).database.windows.net'
+                  DatabaseName: '$(DbNameDev)'
+                  SqlUsername: '$(DbLoginDev)'
+                  SqlPassword: '$(DbPasswordDev)'
+                  deployType: SqlTask
+                  SqlFile: '$(Pipeline.Workspace)/drop/sql/update_to_latest.sql'
