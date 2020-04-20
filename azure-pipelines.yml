@@ -16,7 +16,7 @@ variables:
   value: '$(Build.BuildId)'
 - name: imageName
   value: 'pomotr:$(build.buildNumber)'
-- name: buildConfiguration:
+- name: buildConfiguration
   value: 'Release'
 
 stages:
@@ -112,6 +112,7 @@ stages:
 - stage: 'Deploy'
   displayName: 'Deploy to DEV environment'
   dependsOn: Build
+  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master')) 
   jobs:
   - deployment: Deploy
     pool:
