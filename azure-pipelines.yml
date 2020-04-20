@@ -133,12 +133,12 @@ stages:
                 package: '$(Pipeline.Workspace)/**/PomotrApp.zip'
 
             - task: SqlAzureDacpacDeployment@1
-                displayName: 'Apply database schema changes'
-                inputs:
-                  azureSubscription: 'sc-pomotr-dev'
-                  ServerName: '$(SqlServerNameDev).database.windows.net'
-                  DatabaseName: '$(DbNameDev)'
-                  SqlUsername: '$(DbLoginDev)'
-                  SqlPassword: '$(DbPasswordDev)'
-                  deployType: SqlTask
-                  SqlFile: '$(Pipeline.Workspace)/drop/sql/update_to_latest.sql'
+              displayName: 'Apply database schema changes'
+              inputs:
+                azureSubscription: 'sc-pomotr-dev'
+                ServerName: '$(SqlServerNameDev).database.windows.net'
+                DatabaseName: '$(DbNameDev)'
+                SqlUsername: '$(DbLoginDev)'
+                SqlPassword: '$(DbPasswordDev)'
+                deployType: SqlTask
+                SqlFile: '$(Pipeline.Workspace)/drop/sql/update_to_latest.sql'
