@@ -11,9 +11,13 @@ resources:
 - repo: self
 
 variables:
-  tag: '$(Build.BuildId)'
-  imageName: 'pomotr:$(build.buildNumber)'
-  buildConfiguration: 'Release'
+- group: vg-pomotr-dev
+- name: tag
+  value: '$(Build.BuildId)'
+- name: imageName
+  value: 'pomotr:$(build.buildNumber)'
+- name: buildConfiguration:
+  value: 'Release'
 
 stages:
 - stage: Build
