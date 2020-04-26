@@ -85,11 +85,11 @@ stages:
     - task: PublishTestResults@2
       inputs:
         testResultsFormat: 'VSTest'
-        testResultsFiles: '**/test*.xml'
+        testResultsFiles: '**/test-results.xml'
         searchFolder: '$(System.DefaultWorkingDirectory)/test-results'
         publishRunAttachments: true
       displayName: 'Publish test results'
-      
+
     # Publish test coverage
     - task: PublishCodeCoverageResults@1
       displayName: 'Publish coverage reports'
@@ -97,7 +97,7 @@ stages:
         codeCoverageTool: 'cobertura'
         summaryFileLocation: '$(System.DefaultWorkingDirectory)/test-results/test-results-coverage.xml'
         #summaryFileLocation: '$(System.DefaultWorkingDirectory)/test-results/coverage.xml'
-        pathToSources: '$(System.DefaultWorkingDirectory)/PomotrApp'
+        #pathToSources: '$(System.DefaultWorkingDirectory)/PomotrApp'
         #reportDirectory: '$(System.DefaultWorkingDirectory)/test-results/'
         failIfCoverageEmpty: true
 
