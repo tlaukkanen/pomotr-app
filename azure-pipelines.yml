@@ -93,9 +93,10 @@ stages:
       displayName: 'Publish coverage reports'
       inputs:
         codeCoverageTool: 'cobertura'
-        summaryFileLocation: '$(System.DefaultWorkingDirectory)/test-results/coverage.xml'
+        summaryFileLocation: '$(System.DefaultWorkingDirectory)/**/coverage.cobertura.xml'
+        #summaryFileLocation: '$(System.DefaultWorkingDirectory)/test-results/coverage.xml'
         pathToSources: '$(System.DefaultWorkingDirectory)/PomotrApp'
-        reportDirectory: '$(System.DefaultWorkingDirectory)/test-results/'
+        #reportDirectory: '$(System.DefaultWorkingDirectory)/test-results/'
         failIfCoverageEmpty: true
 
     # Run SonarCloud analyze
