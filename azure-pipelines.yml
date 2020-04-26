@@ -78,6 +78,8 @@ stages:
 
     - script: ls $(System.DefaultWorkingDirectory)/test-results/
       displayName: 'List files in test-results folder'
+    - script: ls $(System.DefaultWorkingDirectory)
+      displayName: 'List files in test-results folder'
 
     # Publish test results
     - task: PublishTestResults@2
