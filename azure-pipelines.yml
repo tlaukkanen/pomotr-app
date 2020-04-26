@@ -73,7 +73,7 @@ stages:
         zipAfterPublish: true
         
     # Unit tests
-    - script: dotnet test --results-directory ./test-results --logger "trx;LogFileName=test-results.xml" /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura ./PomotrApp.Tests/PomotrApp.Tests.csproj
+    - script: dotnet test  --collect:"Code Coverage" --results-directory $(System.DefaultWorkingDirectory)/test-results/ --logger "trx;LogFileName=test-results.xml" /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura /p:CoverletOutput=$(System.DefaultWorkingDirectory)/test-results/test-results-coverage.xml ./PomotrApp.Tests/PomotrApp.Tests.csproj
       displayName: 'Run unit tests'
 
     - script: ls $(System.DefaultWorkingDirectory)/test-results/
@@ -95,7 +95,7 @@ stages:
       displayName: 'Publish coverage reports'
       inputs:
         codeCoverageTool: 'cobertura'
-        summaryFileLocation: '$(System.DefaultWorkingDirectory)/**/coverage.cobertura.xml'
+        summaryFileLocation: '$(System.DefaultWorkingDirectory)/test-results/test-results-coverage.xml'
         #summaryFileLocation: '$(System.DefaultWorkingDirectory)/test-results/coverage.xml'
         pathToSources: '$(System.DefaultWorkingDirectory)/PomotrApp'
         #reportDirectory: '$(System.DefaultWorkingDirectory)/test-results/'
