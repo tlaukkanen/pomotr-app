@@ -119,6 +119,7 @@ namespace PomotrApp
                 if (env.IsDevelopment())
                 {
                     spa.UseReactDevelopmentServer(npmScript: "start");
+                    spa
                 }
             });
         }

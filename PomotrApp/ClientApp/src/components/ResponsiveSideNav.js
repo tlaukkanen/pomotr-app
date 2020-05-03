@@ -6,7 +6,7 @@ import { AppBar, Toolbar, Drawer, List, ListItem, ListItemIcon,
   Grid, Hidden, CssBaseline, Typography, Box } from '@material-ui/core';
 import { Menu, AssignmentTurnedIn, ExitToApp, Close, AssignmentInd, Assignment, SupervisorAccount, AccountCircle, Home } from '@material-ui/icons'
 import { makeStyles, useTheme, withStyles } from '@material-ui/core/styles';
-import { useReactOidc } from '@axa-fr/react-oidc-context';
+import { AuthenticationContext, useReactOidc } from '@axa-fr/react-oidc-context';
 
 const drawerWidth = 256;
 
@@ -84,7 +84,8 @@ export const ResponsiveSideNav = (props) => {
     //const theme = useTheme();
     //const {classes, theme} = this.props;
 
-    function menuListItems() {
+    function menuListItems(logoutCallback) {
+      console.log(JSON.stringify(logoutCallback));
       return(
         <>
             <ListItem button component={Link} to="/">
@@ -116,17 +117,20 @@ export const ResponsiveSideNav = (props) => {
               <ListItemIcon>
                 <AccountCircle/>
               </ListItemIcon>
-              <ListItemText>My Profile</ListItemText>
+              <ListItemText>My Profile {oidcUser?.profile} </ListItemText>
             </ListItem>
-            <ListItem button>
+            <ListItem button >
               <ListItemIcon><ExitToApp></ExitToApp></ListItemIcon>
               <ListItemText>Logout</ListItemText>
             </ListItem>
-        </>);
+        </>
+      );
+        
     }
 
     return (
       <div className={classes.root}>
+
         <CssBaseline/>
           <AppBar>
             <Toolbar>
@@ -160,7 +164,7 @@ export const ResponsiveSideNav = (props) => {
                 <ListItem button onClick={toggleSidebar}>
                   <ListItemIcon><Close/></ListItemIcon>
                 </ListItem>
-                {menuListItems()}
+                {menuListItems(props.logout)}
               </List>
             </Drawer>
           </Hidden>
@@ -175,7 +179,7 @@ export const ResponsiveSideNav = (props) => {
               }}
               >
               <List>
-                {menuListItems()}
+                {menuListItems(props.logout)}
               </List>
             </Drawer>
           </Hidden>
