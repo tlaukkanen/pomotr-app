@@ -3,3 +3,7 @@
 # Pocket Money Tracker 💰
 
 Application for families to track errands and tasks so that kids could collect some pocket money based on their completed tasks.
+
+# 3rd Party Attributions
+
+PWA icon made by [Roundicons](https://www.flaticon.com/authors/roundicons) from [www.flaticon.com](https://www.flaticon.com/)
