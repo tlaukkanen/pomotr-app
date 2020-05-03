@@ -1,9 +1,11 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { BrowserRouter } from 'react-router-dom';
+import { AuthenticationProvider, oidcLog } from '@axa-fr/react-oidc-context';
 import App from './App';
 //import registerServiceWorker from './registerServiceWorker';
 import { createMuiTheme, ThemeProvider } from '@material-ui/core/styles';
+import oidcConfiguration from './configuration';
 
 const baseUrl = document.getElementsByTagName('base')[0].getAttribute('href');
 const rootElement = document.getElementById('root');
@@ -42,7 +44,9 @@ const theme = createMuiTheme({
 ReactDOM.render(
   <ThemeProvider theme={theme}>
     <BrowserRouter basename={baseUrl}>
-      <App />
+      <AuthenticationProvider configuration={oidcConfiguration} loggerLevel={oidcLog.DEBUG}>
+        <App />
+      </AuthenticationProvider>
     </BrowserRouter>
   </ThemeProvider>,
   rootElement);

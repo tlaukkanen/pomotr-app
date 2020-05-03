@@ -32,13 +32,13 @@ namespace PomotrApp.Controllers
         }
 
         [HttpPost("login")]
-        public async Task<ActionResult> Login(LoginData loginData)
+        public ActionResult Login(LoginData loginData)
         {
             return Ok();
         }
 
         [HttpPost("register")]
-        public async Task<ActionResult> Register(RegistrationData registrationData)
+        public ActionResult Register(RegistrationData registrationData)
         {
 
             return Ok();

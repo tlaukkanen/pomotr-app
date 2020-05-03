@@ -6,6 +6,7 @@ import { AppBar, Toolbar, Drawer, List, ListItem, ListItemIcon,
   Grid, Hidden, CssBaseline, Typography, Box } from '@material-ui/core';
 import { Menu, AssignmentTurnedIn, ExitToApp, Close, AssignmentInd, Assignment, SupervisorAccount, AccountCircle, Home } from '@material-ui/icons'
 import { makeStyles, useTheme, withStyles } from '@material-ui/core/styles';
+import { useReactOidc } from '@axa-fr/react-oidc-context';
 
 const drawerWidth = 256;
 
@@ -48,7 +49,8 @@ const useStyles = makeStyles(theme => ({
   },
 }));
 
-export default function ResponsiveSideNav(props) {
+export const ResponsiveSideNav = (props) => {
+  const { oidcUser } = useReactOidc();
 
 //export class NavMenu extends Component {
 //  static displayName = NavMenu.name;
