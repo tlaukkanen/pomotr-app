@@ -1,0 +1,22 @@
+{
+  "Family": {
+    "Id": "f063554f-7499-4fcd-9942-304cd6047edf",
+    "Name": "Testers Family",
+    "Members": []
+  },
+  "Id": "96d9c275-4f80-4ec6-ae18-6d044cf888a2",
+  "UserName": "John",
+  "NormalizedUserName": "JOHN",
+  "Email": null,
+  "NormalizedEmail": null,
+  "EmailConfirmed": false,
+  "PasswordHash": null,
+  "SecurityStamp": "add73412-300d-4724-a158-dbaad045bf7c",
+  "ConcurrencyStamp": "fca7b507-62b0-4ac4-9da3-fb299369676d",
+  "PhoneNumber": null,
+  "PhoneNumberConfirmed": false,
+  "TwoFactorEnabled": false,
+  "LockoutEnd": null,
+  "LockoutEnabled": false,
+  "AccessFailedCount": 0
+}

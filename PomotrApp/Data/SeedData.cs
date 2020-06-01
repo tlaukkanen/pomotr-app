@@ -25,7 +25,7 @@ namespace PomotrApp.Data
         private void SeedUsers()
         {
             string email = "admin@admin.com";
-            var defaultAdmin = new ApplicationUser
+            var defaultAdmin = new FamilyMember
             {
                 Email = email,
                 NormalizedEmail = email.ToUpper(),
@@ -39,7 +39,7 @@ namespace PomotrApp.Data
             _context.Users.Add(defaultAdmin);
             _context.SaveChanges();
 
-            var passwordHasher = new PasswordHasher<ApplicationUser>();
+            var passwordHasher = new PasswordHasher<FamilyMember>();
             var hashedPwd = passwordHasher.HashPassword(defaultAdmin, "DefaultPassword");
             defaultAdmin.PasswordHash = hashedPwd;
         }
