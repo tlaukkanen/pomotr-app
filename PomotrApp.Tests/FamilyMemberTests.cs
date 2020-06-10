@@ -10,7 +10,7 @@ namespace PomotrApp.Tests
     public class FamilyMemberTests
     {
         [Fact]
-        [UpdateSnapshots]
+        //[UpdateSnapshots]
         public void FamilyMemberTest()
         {
             string username = "John";
@@ -29,7 +29,7 @@ namespace PomotrApp.Tests
                 Family = family
             };
 
-            familyMember.ShouldMatchSnapshot();
+            familyMember.UserName.ShouldMatchSnapshot();
         }
         
     }

@@ -53,7 +53,7 @@ namespace PomotrApp.Tests
         }
 
         [Fact]
-        [UpdateSnapshots]
+        //[UpdateSnapshots]
         public async void GetFamilyTest()
         {
             var family = await DbContext.Families

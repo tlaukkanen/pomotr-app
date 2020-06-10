@@ -79,7 +79,7 @@ stages:
     - task: DotNetCoreCLI@2
       inputs:
         command: 'test'
-        arguments: '--configuration $(BuildConfiguration) /p:CollectCoverage=true /p:CoverletOutputFormat=opencover --logger trx'
+        arguments: '--configuration $(BuildConfiguration) --results-directory $(System.DefaultWorkingDirectory)/test-results/ /p:CollectCoverage=true /p:CoverletOutputFormat=opencover --logger trx'
         testRunTitle: 'dotnet test'
 
     - script: ls $(System.DefaultWorkingDirectory)/test-results/
@@ -106,13 +106,6 @@ stages:
         #pathToSources: '$(System.DefaultWorkingDirectory)/PomotrApp'
         #reportDirectory: '$(System.DefaultWorkingDirectory)/test-results/'
         failIfCoverageEmpty: false
-
-    # Run SonarCloud analyze
-    - task: UseDotNet@2 
-      displayName: ".NET Core 2.x"
-      inputs:
-        version: '2.x'
-        packageType: sdk
         
     - task: SonarCloudAnalyze@1
     - task: SonarCloudPublish@1
