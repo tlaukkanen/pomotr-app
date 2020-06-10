@@ -79,7 +79,7 @@ stages:
     - task: DotNetCoreCLI@2
       inputs:
         command: 'test'
-        arguments: '--configuration $(BuildConfiguration) --results-directory $(System.DefaultWorkingDirectory)/test-results/ /p:CollectCoverage=true /p:CoverletOutputFormat=opencover --logger trx'
+        arguments: '--configuration $(BuildConfiguration) --results-directory $(System.DefaultWorkingDirectory)/test-results/ /p:CollectCoverage=true /p:CoverletOutputFormat=opencover --logger trx ./PomotrApp.Tests/PomotrApp.Tests.csproj'
         testRunTitle: 'dotnet test'
 
     - script: ls $(System.DefaultWorkingDirectory)/test-results/
