@@ -20,6 +20,6 @@ namespace PomotrApp.Data
 
         public DbSet<Errand> Errands { get; set; }
         public DbSet<Family> Families { get; set; }
-        public DbSet<Family> FamilyMembers { get; set; }
+        public DbSet<FamilyMember> FamilyMembers { get; set; }
     }
 }
