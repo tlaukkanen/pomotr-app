@@ -79,8 +79,9 @@ stages:
     - task: DotNetCoreCLI@2
       inputs:
         command: 'test'
-        projects: 'PomotrApp.Tests/PomotrApp.Tests.csproj'
+        projects: 'PomotrApp.Tests/*.Tests.csproj'
         arguments: '--configuration $(BuildConfiguration) --results-directory $(System.DefaultWorkingDirectory)/test-results/ /p:CollectCoverage=true /p:CoverletOutputFormat=opencover --logger trx'
+        nobuild: true
 
     - script: ls $(System.DefaultWorkingDirectory)/test-results/
       displayName: 'List files in test-results folder'
