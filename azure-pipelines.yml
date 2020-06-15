@@ -73,8 +73,8 @@ stages:
         zipAfterPublish: true
         
     # Unit tests
-    #- script: dotnet test  --collect:"Code Coverage" --results-directory $(System.DefaultWorkingDirectory)/test-results/ --logger "trx;LogFileName=test-results.xml" /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura /p:CoverletOutput=$(System.DefaultWorkingDirectory)/test-results/test-results-coverage.xml ./PomotrApp.Tests/PomotrApp.Tests.csproj
-    #  displayName: 'Run unit tests'
+    - script: dotnet test  --collect:"Code Coverage" --results-directory $(System.DefaultWorkingDirectory)/test-results/ --logger "trx;LogFileName=test-results.xml" /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura /p:CoverletOutput=$(System.DefaultWorkingDirectory)/test-results/test-results-coverage.xml ./PomotrApp.Tests/PomotrApp.Tests.csproj
+      displayName: 'Run unit tests'
 
     - task: DotNetCoreCLI@2
       inputs:
@@ -82,20 +82,6 @@ stages:
         projects: 'PomotrApp.Tests/*.Tests.csproj'
         arguments: '--collect:"Code Coverage" --configuration $(BuildConfiguration) /p:CollectCoverage=true /p:CoverletOutputFormat=opencover --logger trx'
         nobuild: true
-
-    - script: ls $(System.DefaultWorkingDirectory)/test-results/
-      displayName: 'List files in test-results folder'
-    - script: ls $(System.DefaultWorkingDirectory)
-      displayName: 'List files in test-results folder'
-
-    # Publish test results
-    - task: PublishTestResults@2
-      inputs:
-        testResultsFormat: 'VSTest'
-        testResultsFiles: '**/*.xml'
-        searchFolder: '$(System.DefaultWorkingDirectory)/test-results'
-        publishRunAttachments: true
-      displayName: 'Publish test results'
 
     # Publish test coverage
     - task: PublishCodeCoverageResults@1
