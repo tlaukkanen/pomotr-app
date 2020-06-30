@@ -33,12 +33,12 @@ namespace PomotrApp
                 //options.UseSqlite(
                 //    Configuration.GetConnectionString("DefaultConnection")));
 
-            services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = true)
+            services.AddDefaultIdentity<FamilyMember>(options => options.SignIn.RequireConfirmedAccount = true)
                 .AddEntityFrameworkStores<ApplicationDbContext>();
 
             var identityServerBuild = services.AddIdentityServer();
             identityServerBuild
-                .AddApiAuthorization<ApplicationUser, ApplicationDbContext>();
+                .AddApiAuthorization<FamilyMember, ApplicationDbContext>();
             if(string.IsNullOrEmpty( Configuration["AzureKeyVault:Url"]) ) {
                 
             }

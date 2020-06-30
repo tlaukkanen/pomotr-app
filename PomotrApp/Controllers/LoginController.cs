@@ -36,11 +36,11 @@ namespace PomotrApp.Controllers
         }        
 
         private ILogger<LoginController> _logger { get; set; }
-        private SignInManager<ApplicationUser> _signInManager { get; set; }
+        private SignInManager<FamilyMember> _signInManager { get; set; }
 
         public LoginController(
             ILogger<LoginController> logger,
-            SignInManager<ApplicationUser> signInManager)
+            SignInManager<FamilyMember> signInManager)
         {
             _logger = logger;
             _signInManager = signInManager;

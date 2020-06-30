@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace PomotrApp.Data
 {
-    public class ApplicationDbContext : ApiAuthorizationDbContext<ApplicationUser>
+    public class ApplicationDbContext : ApiAuthorizationDbContext<FamilyMember>
     {
         public ApplicationDbContext(
             DbContextOptions options,
@@ -20,5 +20,6 @@ namespace PomotrApp.Data
 
         public DbSet<Errand> Errands { get; set; }
         public DbSet<Family> Families { get; set; }
+        public DbSet<FamilyMember> FamilyMembers { get; set; }
     }
 }

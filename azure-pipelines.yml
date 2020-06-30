@@ -76,19 +76,12 @@ stages:
     - script: dotnet test  --collect:"Code Coverage" --results-directory $(System.DefaultWorkingDirectory)/test-results/ --logger "trx;LogFileName=test-results.xml" /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura /p:CoverletOutput=$(System.DefaultWorkingDirectory)/test-results/test-results-coverage.xml ./PomotrApp.Tests/PomotrApp.Tests.csproj
       displayName: 'Run unit tests'
 
-    - script: ls $(System.DefaultWorkingDirectory)/test-results/
-      displayName: 'List files in test-results folder'
-    - script: ls $(System.DefaultWorkingDirectory)
-      displayName: 'List files in test-results folder'
-
-    # Publish test results
-    - task: PublishTestResults@2
+    - task: DotNetCoreCLI@2
       inputs:
-        testResultsFormat: 'VSTest'
-        testResultsFiles: '**/test-results.xml'
-        searchFolder: '$(System.DefaultWorkingDirectory)/test-results'
-        publishRunAttachments: true
-      displayName: 'Publish test results'
+        command: 'test'
+        projects: 'PomotrApp.Tests/*.Tests.csproj'
+        arguments: '--collect:"Code Coverage" --configuration $(BuildConfiguration) /p:CollectCoverage=true /p:CoverletOutputFormat=opencover --logger trx'
+        nobuild: true
 
     # Publish test coverage
     - task: PublishCodeCoverageResults@1
@@ -99,14 +92,7 @@ stages:
         #summaryFileLocation: '$(System.DefaultWorkingDirectory)/test-results/coverage.xml'
         #pathToSources: '$(System.DefaultWorkingDirectory)/PomotrApp'
         #reportDirectory: '$(System.DefaultWorkingDirectory)/test-results/'
-        failIfCoverageEmpty: true
-
-    # Run SonarCloud analyze
-    - task: UseDotNet@2 
-      displayName: ".NET Core 2.x"
-      inputs:
-        version: '2.x'
-        packageType: sdk
+        failIfCoverageEmpty: false
         
     - task: SonarCloudAnalyze@1
     - task: SonarCloudPublish@1
